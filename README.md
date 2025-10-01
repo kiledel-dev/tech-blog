@@ -88,7 +88,7 @@ yarn deploy
 ```markdown
 ---
 title: "포스트 제목"
-date: "2024-01-01"
+date: "2025-01-01"
 category: "tech" # 또는 "diary"
 tags: ["javascript", "react", "gatsby"]
 description: "포스트 설명"

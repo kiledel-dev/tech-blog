@@ -37,7 +37,7 @@ const Footer = ({ expand }: FooterProps) => {
           Copyright ©Kiledel All rights reserved.
         </Caption>
         <Caption textColor={theme.colors.light[800]}>
-          2023 | built with gatsby | Developed by Kiledel
+          2025 | built with gatsby | Developed by Kiledel
         </Caption>
       </div>
       <a
