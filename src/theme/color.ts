@@ -1,12 +1,12 @@
 export const primary = {
-  default: '#FF5F4D',
-  50: '#F45D4C',
-  100: '#FF5F4D',
-  200: '#FF7F71',
-  300: '#FF9F94',
-  400: '#FFBFB8',
-  500: '#FFDFDB',
-  600: '#FFECEA',
+  default: '#e12990',
+  50: '#c71e7b',
+  100: '#e12990',
+  200: '#e659a6',
+  300: '#eb89bc',
+  400: '#f0b9d2',
+  500: '#f5dce8',
+  600: '#faf0f5',
 } as const;
 
 export const secondary = {
