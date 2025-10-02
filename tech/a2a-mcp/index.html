@@ -1,0 +1,599 @@
+<!DOCTYPE html><html lang="ko"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="ie=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/><meta name="generator" content="Gatsby 5.9.1"/><meta data-react-helmet="true" name="google-site-verification" content="i1k9fAJNvByDpCtfnvLiC1aCfhuag46Ftm5CVnntwrI"/><meta data-react-helmet="true" name="description" content="LLM 모델이 외부 도구와 상호작용하는 방식인 MCP와, Agent 간 통신 방식인 A2A 프로토콜에 대해 탐구"/><meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0"/><meta data-react-helmet="true" http-equiv="Content-Type" content="text/html;charset=UTF-8"/><meta data-react-helmet="true" property="og:type" content="website"/><meta data-react-helmet="true" property="og:title" content="LLM 에이전트 통신 프로토콜 분석: MCP와 A2A"/><meta data-react-helmet="true" property="og:description" content="LLM 모델이 외부 도구와 상호작용하는 방식인 MCP와, Agent 간 통신 방식인 A2A 프로토콜에 대해 탐구"/><meta data-react-helmet="true" property="og:image" content="/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/a2a_mcp.png"/><meta data-react-helmet="true" property="og:url"/><meta data-react-helmet="true" property="og:site_name" content="LLM 에이전트 통신 프로토콜 분석: MCP와 A2A"/><style data-href="/tech-blog/styles.76e17d8dde0649c1a3fe.css" data-identity="gatsby-global-css">.gatsby-code-button-container{display:flex;justify-content:flex-end;pointer-events:none;position:relative;top:28px;touch-action:none;z-index:100}.gatsby-code-button{cursor:pointer;pointer-events:auto}.gatsby-code-button:after{background-color:#000;color:#fff;content:attr(data-tooltip);display:none;font-size:16px;padding:5px;position:absolute;visibility:hidden;white-space:nowrap}.gatsby-code-button[data-tooltip]:after{right:0;top:26px}.gatsby-code-button[data-tooltip]:focus:after,.gatsby-code-button[data-tooltip]:hover:after{display:block;visibility:visible;z-index:200}.gatsby-code-button-toaster{align-items:center;bottom:0;display:flex;height:100vh;justify-content:center;left:0;pointer-events:none;position:fixed;right:0;top:0;width:100vw;z-index:500}.gatsby-code-button-toaster-text{animation:animation 3s cubic-bezier(.98,.01,.53,.47);background-color:#000;border-radius:2px;color:#fff;font-family:monospace;font-size:24px;letter-spacing:-1px;margin:0 15px;max-width:850px;opacity:0;padding:20px;text-align:center;width:100%}.gatsby-code-button-buffer{opacity:0;position:fixed;top:-9999px}@keyframes animation{0%,50%{opacity:1}50%,to{opacity:0}}code[class*=language-],pre[class*=language-]{word-wrap:normal;background:none;color:#ccc;font-family:Consolas,Monaco,Andale Mono,Ubuntu Mono,monospace;font-size:1em;-webkit-hyphens:none;hyphens:none;line-height:1.5;tab-size:4;text-align:left;white-space:pre;word-break:normal;word-spacing:normal}pre[class*=language-]{margin:.5em 0;overflow:auto;padding:1em}:not(pre)>code[class*=language-],pre[class*=language-]{background:#2d2d2d}:not(pre)>code[class*=language-]{border-radius:.3em;padding:.1em;white-space:normal}.token.block-comment,.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#999}.token.punctuation{color:#ccc}.token.attr-name,.token.deleted,.token.namespace,.token.tag{color:#e2777a}.token.function-name{color:#6196cc}.token.boolean,.token.function,.token.number{color:#f08d49}.token.class-name,.token.constant,.token.property,.token.symbol{color:#f8c555}.token.atrule,.token.builtin,.token.important,.token.keyword,.token.selector{color:#cc99cd}.token.attr-value,.token.char,.token.regex,.token.string,.token.variable{color:#7ec699}.token.entity,.token.operator,.token.url{color:#67cdcc}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}.token.inserted{color:green}:host,:root{--fa-font-solid:normal 900 1em/1 "Font Awesome 6 Solid";--fa-font-regular:normal 400 1em/1 "Font Awesome 6 Regular";--fa-font-light:normal 300 1em/1 "Font Awesome 6 Light";--fa-font-thin:normal 100 1em/1 "Font Awesome 6 Thin";--fa-font-duotone:normal 900 1em/1 "Font Awesome 6 Duotone";--fa-font-sharp-solid:normal 900 1em/1 "Font Awesome 6 Sharp";--fa-font-sharp-regular:normal 400 1em/1 "Font Awesome 6 Sharp";--fa-font-sharp-light:normal 300 1em/1 "Font Awesome 6 Sharp";--fa-font-brands:normal 400 1em/1 "Font Awesome 6 Brands"}svg:not(:host).svg-inline--fa,svg:not(:root).svg-inline--fa{box-sizing:content-box;overflow:visible}.svg-inline--fa{display:var(--fa-display,inline-block);height:1em;overflow:visible;vertical-align:-.125em}.svg-inline--fa.fa-2xs{vertical-align:.1em}.svg-inline--fa.fa-xs{vertical-align:0}.svg-inline--fa.fa-sm{vertical-align:-.07143em}.svg-inline--fa.fa-lg{vertical-align:-.2em}.svg-inline--fa.fa-xl{vertical-align:-.25em}.svg-inline--fa.fa-2xl{vertical-align:-.3125em}.svg-inline--fa.fa-pull-left{margin-right:var(--fa-pull-margin,.3em);width:auto}.svg-inline--fa.fa-pull-right{margin-left:var(--fa-pull-margin,.3em);width:auto}.svg-inline--fa.fa-li{top:.25em;width:var(--fa-li-width,2em)}.svg-inline--fa.fa-fw{width:var(--fa-fw-width,1.25em)}.fa-layers svg.svg-inline--fa{bottom:0;left:0;margin:auto;position:absolute;right:0;top:0}.fa-layers-counter,.fa-layers-text{display:inline-block;position:absolute;text-align:center}.fa-layers{display:inline-block;height:1em;position:relative;text-align:center;vertical-align:-.125em;width:1em}.fa-layers svg.svg-inline--fa{transform-origin:center center}.fa-layers-text{left:50%;top:50%;transform:translate(-50%,-50%);transform-origin:center center}.fa-layers-counter{background-color:var(--fa-counter-background-color,#ff253a);border-radius:var(--fa-counter-border-radius,1em);box-sizing:border-box;color:var(--fa-inverse,#fff);line-height:var(--fa-counter-line-height,1);max-width:var(--fa-counter-max-width,5em);min-width:var(--fa-counter-min-width,1.5em);overflow:hidden;padding:var(--fa-counter-padding,.25em .5em);right:var(--fa-right,0);text-overflow:ellipsis;top:var(--fa-top,0);transform:scale(var(--fa-counter-scale,.25));transform-origin:top right}.fa-layers-bottom-right{bottom:var(--fa-bottom,0);right:var(--fa-right,0);top:auto;transform:scale(var(--fa-layers-scale,.25));transform-origin:bottom right}.fa-layers-bottom-left{bottom:var(--fa-bottom,0);left:var(--fa-left,0);right:auto;top:auto;transform:scale(var(--fa-layers-scale,.25));transform-origin:bottom left}.fa-layers-top-right{right:var(--fa-right,0);top:var(--fa-top,0);transform:scale(var(--fa-layers-scale,.25));transform-origin:top right}.fa-layers-top-left{left:var(--fa-left,0);right:auto;top:var(--fa-top,0);transform:scale(var(--fa-layers-scale,.25));transform-origin:top left}.fa-1x{font-size:1em}.fa-2x{font-size:2em}.fa-3x{font-size:3em}.fa-4x{font-size:4em}.fa-5x{font-size:5em}.fa-6x{font-size:6em}.fa-7x{font-size:7em}.fa-8x{font-size:8em}.fa-9x{font-size:9em}.fa-10x{font-size:10em}.fa-2xs{font-size:.625em;line-height:.1em;vertical-align:.225em}.fa-xs{font-size:.75em;line-height:.08333em;vertical-align:.125em}.fa-sm{font-size:.875em;line-height:.07143em;vertical-align:.05357em}.fa-lg{font-size:1.25em;line-height:.05em;vertical-align:-.075em}.fa-xl{font-size:1.5em;line-height:.04167em;vertical-align:-.125em}.fa-2xl{font-size:2em;line-height:.03125em;vertical-align:-.1875em}.fa-fw{text-align:center;width:1.25em}.fa-ul{list-style-type:none;margin-left:var(--fa-li-margin,2.5em);padding-left:0}.fa-ul>li{position:relative}.fa-li{left:calc(var(--fa-li-width, 2em)*-1);line-height:inherit;position:absolute;text-align:center;width:var(--fa-li-width,2em)}.fa-border{border-color:var(--fa-border-color,#eee);border-radius:var(--fa-border-radius,.1em);border-style:var(--fa-border-style,solid);border-width:var(--fa-border-width,.08em);padding:var(--fa-border-padding,.2em .25em .15em)}.fa-pull-left{float:left;margin-right:var(--fa-pull-margin,.3em)}.fa-pull-right{float:right;margin-left:var(--fa-pull-margin,.3em)}.fa-beat{animation-delay:var(--fa-animation-delay,0s);animation-direction:var(--fa-animation-direction,normal);animation-duration:var(--fa-animation-duration,1s);animation-iteration-count:var(--fa-animation-iteration-count,infinite);animation-name:fa-beat;animation-timing-function:var(--fa-animation-timing,ease-in-out)}.fa-bounce{animation-delay:var(--fa-animation-delay,0s);animation-direction:var(--fa-animation-direction,normal);animation-duration:var(--fa-animation-duration,1s);animation-iteration-count:var(--fa-animation-iteration-count,infinite);animation-name:fa-bounce;animation-timing-function:var(--fa-animation-timing,cubic-bezier(.28,.84,.42,1))}.fa-fade{animation-iteration-count:var(--fa-animation-iteration-count,infinite);animation-name:fa-fade;animation-timing-function:var(--fa-animation-timing,cubic-bezier(.4,0,.6,1))}.fa-beat-fade,.fa-fade{animation-delay:var(--fa-animation-delay,0s);animation-direction:var(--fa-animation-direction,normal);animation-duration:var(--fa-animation-duration,1s)}.fa-beat-fade{animation-iteration-count:var(--fa-animation-iteration-count,infinite);animation-name:fa-beat-fade;animation-timing-function:var(--fa-animation-timing,cubic-bezier(.4,0,.6,1))}.fa-flip{animation-delay:var(--fa-animation-delay,0s);animation-direction:var(--fa-animation-direction,normal);animation-duration:var(--fa-animation-duration,1s);animation-iteration-count:var(--fa-animation-iteration-count,infinite);animation-name:fa-flip;animation-timing-function:var(--fa-animation-timing,ease-in-out)}.fa-shake{animation-duration:var(--fa-animation-duration,1s);animation-iteration-count:var(--fa-animation-iteration-count,infinite);animation-name:fa-shake;animation-timing-function:var(--fa-animation-timing,linear)}.fa-shake,.fa-spin{animation-delay:var(--fa-animation-delay,0s);animation-direction:var(--fa-animation-direction,normal)}.fa-spin{animation-duration:var(--fa-animation-duration,2s);animation-iteration-count:var(--fa-animation-iteration-count,infinite);animation-name:fa-spin;animation-timing-function:var(--fa-animation-timing,linear)}.fa-spin-reverse{--fa-animation-direction:reverse}.fa-pulse,.fa-spin-pulse{animation-direction:var(--fa-animation-direction,normal);animation-duration:var(--fa-animation-duration,1s);animation-iteration-count:var(--fa-animation-iteration-count,infinite);animation-name:fa-spin;animation-timing-function:var(--fa-animation-timing,steps(8))}@media (prefers-reduced-motion:reduce){.fa-beat,.fa-beat-fade,.fa-bounce,.fa-fade,.fa-flip,.fa-pulse,.fa-shake,.fa-spin,.fa-spin-pulse{animation-delay:-1ms;animation-duration:1ms;animation-iteration-count:1;transition-delay:0s;transition-duration:0s}}@keyframes fa-beat{0%,90%{transform:scale(1)}45%{transform:scale(var(--fa-beat-scale,1.25))}}@keyframes fa-bounce{0%{transform:scale(1) translateY(0)}10%{transform:scale(var(--fa-bounce-start-scale-x,1.1),var(--fa-bounce-start-scale-y,.9)) translateY(0)}30%{transform:scale(var(--fa-bounce-jump-scale-x,.9),var(--fa-bounce-jump-scale-y,1.1)) translateY(var(--fa-bounce-height,-.5em))}50%{transform:scale(var(--fa-bounce-land-scale-x,1.05),var(--fa-bounce-land-scale-y,.95)) translateY(0)}57%{transform:scale(1) translateY(var(--fa-bounce-rebound,-.125em))}64%{transform:scale(1) translateY(0)}to{transform:scale(1) translateY(0)}}@keyframes fa-fade{50%{opacity:var(--fa-fade-opacity,.4)}}@keyframes fa-beat-fade{0%,to{opacity:var(--fa-beat-fade-opacity,.4);transform:scale(1)}50%{opacity:1;transform:scale(var(--fa-beat-fade-scale,1.125))}}@keyframes fa-flip{50%{transform:rotate3d(var(--fa-flip-x,0),var(--fa-flip-y,1),var(--fa-flip-z,0),var(--fa-flip-angle,-180deg))}}@keyframes fa-shake{0%{transform:rotate(-15deg)}4%{transform:rotate(15deg)}24%,8%{transform:rotate(-18deg)}12%,28%{transform:rotate(18deg)}16%{transform:rotate(-22deg)}20%{transform:rotate(22deg)}32%{transform:rotate(-12deg)}36%{transform:rotate(12deg)}40%,to{transform:rotate(0deg)}}@keyframes fa-spin{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.fa-rotate-90{transform:rotate(90deg)}.fa-rotate-180{transform:rotate(180deg)}.fa-rotate-270{transform:rotate(270deg)}.fa-flip-horizontal{transform:scaleX(-1)}.fa-flip-vertical{transform:scaleY(-1)}.fa-flip-both,.fa-flip-horizontal.fa-flip-vertical{transform:scale(-1)}.fa-rotate-by{transform:rotate(var(--fa-rotate-angle,none))}.fa-stack{display:inline-block;height:2em;position:relative;vertical-align:middle;width:2.5em}.fa-stack-1x,.fa-stack-2x{bottom:0;left:0;margin:auto;position:absolute;right:0;top:0;z-index:var(--fa-stack-z-index,auto)}.svg-inline--fa.fa-stack-1x{height:1em;width:1.25em}.svg-inline--fa.fa-stack-2x{height:2em;width:2.5em}.fa-inverse{color:var(--fa-inverse,#fff)}.fa-sr-only,.fa-sr-only-focusable:not(:focus),.sr-only,.sr-only-focusable:not(:focus){clip:rect(0,0,0,0);border-width:0;height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;white-space:nowrap;width:1px}.svg-inline--fa .fa-primary{fill:var(--fa-primary-color,currentColor);opacity:var(--fa-primary-opacity,1)}.svg-inline--fa .fa-secondary{fill:var(--fa-secondary-color,currentColor)}.svg-inline--fa .fa-secondary,.svg-inline--fa.fa-swap-opacity .fa-primary{opacity:var(--fa-secondary-opacity,.4)}.svg-inline--fa.fa-swap-opacity .fa-secondary{opacity:var(--fa-primary-opacity,1)}.svg-inline--fa mask .fa-primary,.svg-inline--fa mask .fa-secondary{fill:#000}.fa-duotone.fa-inverse,.fad.fa-inverse{color:var(--fa-inverse,#fff)}</style><style>.gatsby-image-wrapper{position:relative;overflow:hidden}.gatsby-image-wrapper picture.object-fit-polyfill{position:static!important}.gatsby-image-wrapper img{bottom:0;height:100%;left:0;margin:0;max-width:none;padding:0;position:absolute;right:0;top:0;width:100%;object-fit:cover}.gatsby-image-wrapper [data-main-image]{opacity:0;transform:translateZ(0);transition:opacity .25s linear;will-change:opacity}.gatsby-image-wrapper-constrained{display:inline-block;vertical-align:top}</style><noscript><style>.gatsby-image-wrapper noscript [data-main-image]{opacity:1!important}.gatsby-image-wrapper [data-placeholder-image]{opacity:0!important}</style></noscript><script type="module">const e="undefined"!=typeof HTMLImageElement&&"loading"in HTMLImageElement.prototype;e&&document.body.addEventListener("load",(function(e){const t=e.target;if(void 0===t.dataset.mainImage)return;if(void 0===t.dataset.gatsbyImageSsr)return;let a=null,n=t;for(;null===a&&n;)void 0!==n.parentNode.dataset.gatsbyImageWrapper&&(a=n.parentNode),n=n.parentNode;const o=a.querySelector("[data-placeholder-image]"),r=new Image;r.src=t.currentSrc,r.decode().catch((()=>{})).then((()=>{t.style.opacity=1,o&&(o.style.opacity=0,o.style.transition="opacity 500ms linear")}))}),!0);</script><link rel="sitemap" type="application/xml" href="/tech-blog/sitemap-index.xml"/><title data-react-helmet="true">LLM 에이전트 통신 프로토콜 분석: MCP와 A2A</title><script data-react-helmet="true" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXX" crossorigin="anonymous" async=""></script><link rel="icon" href="/tech-blog/favicon-32x32.png?v=4818bb0deee03094d08d73c70ae284a2" type="image/png"/><link rel="manifest" href="/tech-blog/manifest.webmanifest" crossorigin="anonymous"/><link rel="apple-touch-icon" sizes="48x48" href="/tech-blog/icons/icon-48x48.png?v=4818bb0deee03094d08d73c70ae284a2"/><link rel="apple-touch-icon" sizes="72x72" href="/tech-blog/icons/icon-72x72.png?v=4818bb0deee03094d08d73c70ae284a2"/><link rel="apple-touch-icon" sizes="96x96" href="/tech-blog/icons/icon-96x96.png?v=4818bb0deee03094d08d73c70ae284a2"/><link rel="apple-touch-icon" sizes="144x144" href="/tech-blog/icons/icon-144x144.png?v=4818bb0deee03094d08d73c70ae284a2"/><link rel="apple-touch-icon" sizes="192x192" href="/tech-blog/icons/icon-192x192.png?v=4818bb0deee03094d08d73c70ae284a2"/><link rel="apple-touch-icon" sizes="256x256" href="/tech-blog/icons/icon-256x256.png?v=4818bb0deee03094d08d73c70ae284a2"/><link rel="apple-touch-icon" sizes="384x384" href="/tech-blog/icons/icon-384x384.png?v=4818bb0deee03094d08d73c70ae284a2"/><link rel="apple-touch-icon" sizes="512x512" href="/tech-blog/icons/icon-512x512.png?v=4818bb0deee03094d08d73c70ae284a2"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="true"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&amp;display=swap"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard-dynamic-subset.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&amp;display=swap"/><link rel="canonical" href="https://kiledel-dev.github.io/tech-blog/tech/a2a-mcp/" data-baseprotocol="https:" data-basehost="kiledel-dev.github.io"/><style type="text/css">
+    .anchor-header.before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: translateX(-100%);
+      padding-right: 4px;
+    }
+    .anchor-header.after {
+      display: inline-block;
+      padding-left: 4px;
+    }
+    h1 .anchor-header svg,
+    h2 .anchor-header svg,
+    h3 .anchor-header svg,
+    h4 .anchor-header svg,
+    h5 .anchor-header svg,
+    h6 .anchor-header svg {
+      visibility: hidden;
+    }
+    h1:hover .anchor-header svg,
+    h2:hover .anchor-header svg,
+    h3:hover .anchor-header svg,
+    h4:hover .anchor-header svg,
+    h5:hover .anchor-header svg,
+    h6:hover .anchor-header svg,
+    h1 .anchor-header:focus svg,
+    h2 .anchor-header:focus svg,
+    h3 .anchor-header:focus svg,
+    h4 .anchor-header:focus svg,
+    h5 .anchor-header:focus svg,
+    h6 .anchor-header:focus svg {
+      visibility: visible;
+    }
+  </style><script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+      var hash = window.decodeURI(location.hash.replace('#', ''))
+      if (hash !== '') {
+        var element = document.getElementById(hash)
+        if (element) {
+          var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+          var clientTop = document.documentElement.clientTop || document.body.clientTop || 0
+          var offset = element.getBoundingClientRect().top + scrollTop - clientTop
+          // Wait for the browser to finish rendering before scrolling.
+          setTimeout((function() {
+            window.scrollTo(0, offset - 172)
+          }), 0)
+        }
+      }
+    })
+  </script></head><body><div id="___gatsby"><div style="outline:none" tabindex="-1" id="gatsby-focus-wrapper"><style data-emotion="css-global 4t6uvz">*{margin:0;padding:0;box-sizing:border-box;font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Noto Sans','Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;font-weight:400;color:#000;word-break:keep-all;word-wrap:break-word;box-sizing:border-box;scroll-margin-top:120px;}*,::after,::before{box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;}a{padding:0;-webkit-text-decoration:none;text-decoration:none;box-shadow:none;outline:none;}ul,li{list-style:none;}img{border:0;}button{background-color:transparent;-webkit-text-decoration:none;text-decoration:none;border:none;outline:none;cursor:pointer;font:inherit;}input{-webkit-text-decoration:none;text-decoration:none;background-color:none;outline:none;}input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,input:-webkit-autofill:active{box-shadow:0 0 0px 1000px transparent inset;-webkit-transition:background-color 9999s ease-out;-webkit-transition:background-color 5000s ease-in-out 0s;transition:background-color 5000s ease-in-out 0s;}textarea{resize:none;border:none;outline:none;}select{background:none;outline:none;border-radius:0;cursor:pointer;-moz-appearance:none;-webkit-appearance:none;}.gatsby-code-button-toaster{position:fixed;top:120px;z-index:999;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;height:40px;}.gatsby-code-button-toaster-text{border-radius:100px;background:#fafafa;box-shadow:4px 8px 12px rgba(0, 0, 0, 0.1);border:1px solid #f4f5f6;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;width:180px;height:40px;font-size:15px;font-family:Pretendard;color:#212121;}.typography-ellipsis-2line{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.6em;height:3.2em;}</style><style data-emotion="css a6cxlr">.css-a6cxlr{position:fixed;z-index:99999;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;width:100%;height:72px;background-color:#ffffff;box-shadow:0px 2px 4px 2px rgba(225, 225, 225, 0.15);margin:0 auto;padding-left:40px;padding-right:32px;-webkit-transition:all 0.5s ease;transition:all 0.5s ease;}@media (max-width: 768px){.css-a6cxlr{height:64px;padding:0px 8px;}}</style><header class="css-a6cxlr e66yd545"><a href="/tech-blog/"><style data-emotion="css 1jzfnbs">.css-1jzfnbs{width:40px;height:40px;background:url(/tech-blog/static/g-logo-3bd9aca45c6eef346ee160d011933fe5.png);-webkit-background-size:contain;background-size:contain;background-repeat:no-repeat;-webkit-background-position:left top;background-position:left top;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;}</style><div class="css-1jzfnbs e66yd540"></div></a><style data-emotion="css rrlyql">.css-rrlyql{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:end;-ms-flex-pack:end;-webkit-justify-content:flex-end;justify-content:flex-end;}</style><div class="css-rrlyql e66yd544"><style data-emotion="css uiv6qo">.css-uiv6qo{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:end;-ms-flex-pack:end;-webkit-justify-content:flex-end;justify-content:flex-end;}@media (max-width: 768px){.css-uiv6qo{visibility:hidden;opacity:0;position:absolute;top:-10000;right:84px;}}</style><div class="css-uiv6qo e66yd543"><a href="/tech-blog/"><style data-emotion="css 38mzj2">.css-38mzj2{padding:0px 16px;cursor:pointer;}.css-38mzj2 p{color:#e12990;font-weight:600;}</style><div class="css-38mzj2 ec18yj0"><style data-emotion="css f5x3cp">.css-f5x3cp{font-family:Inter,Pretendard,Noto Sans;font-size:16px;font-weight:600;line-height:23px;color:#000000;}</style><p class="css-f5x3cp exxr09g12">Tech</p></div></a><a href="/tech-blog/diary/"><style data-emotion="css 1kgnvky">.css-1kgnvky{padding:0px 16px;cursor:pointer;}.css-1kgnvky p{color:#000000;font-weight:500;}.css-1kgnvky:hover p{color:#666666;}</style><div class="css-1kgnvky ec18yj0"><p class="css-f5x3cp exxr09g12">Diary</p></div></a></div><style data-emotion="css 10hepnt">.css-10hepnt{margin-left:8px;}@media (max-width: 768px){.css-10hepnt{visibility:hidden;opacity:0;position:absolute;top:-10000;}}</style><div class="css-10hepnt e66yd541"><a href="/tech-blog/search/"><style data-emotion="css 1mijm5n">.css-1mijm5n{padding:10px;}.css-1mijm5n:hover{background-color:#f5f5f5;border-radius:8px;}</style><button class="css-1mijm5n e1cy5zw40"><style data-emotion="css 13tvgi6">.css-13tvgi6{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;object-fit:contain;}.css-13tvgi6 svg>path{fill:#353535;stroke:#fff!important;stroke-width:3.5%!important;}</style><div style="width:20px;height:20px" class="css-13tvgi6 exmukbp0"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" font-size="20px"><path fill="currentColor" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"></path></svg></div></button></a></div><style data-emotion="css 1xqhshw">.css-1xqhshw{visibility:hidden;opacity:0;position:absolute;top:-10000;}@media (max-width: 768px){.css-1xqhshw{position:relative;visibility:visible;opacity:100;}}</style><div class="css-1xqhshw e66yd542"><button class="css-1mijm5n e1cy5zw40"><div style="width:20px;height:20px" class="css-13tvgi6 exmukbp0"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="bars" class="svg-inline--fa fa-bars " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" font-size="20px"><path fill="currentColor" d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"></path></svg></div></button></div></div></header><style data-emotion="css 19kuduj">.css-19kuduj{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:start;-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start;max-width:1200px;width:100%;min-height:calc(100vh - 80px);height:100%;padding:0px 40px;padding-top:72px;margin:0 auto;background-color:#ffffff;-webkit-transition:all 0.5s ease-in-out;transition:all 0.5s ease-in-out;}@media (max-width: 768px){.css-19kuduj{padding:40px 0px;padding-top:72px;}}</style><main class="css-19kuduj etg4l5l0"><style data-emotion="css 1p2vj4y">.css-1p2vj4y{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;-webkit-box-align:flex-start;-ms-flex-align:flex-start;align-items:flex-start;-webkit-box-pack:start;-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start;max-width:768px;width:100%;height:100%;padding:80px 0px;}@media (max-width: 768px){.css-1p2vj4y{padding:40px 16px;padding-bottom:60px;}}</style><div class="css-1p2vj4y e1gnz55y0"><style data-emotion="css 1czvc59">.css-1czvc59{width:100%;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;-webkit-box-align:flex-start;-ms-flex-align:flex-start;align-items:flex-start;-webkit-box-pack:start;-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start;padding-bottom:20px;margin-bottom:20px;}</style><div class="css-1czvc59 e8dakrw3"><style data-emotion="css 1pq5efy">.css-1pq5efy{word-break:keep-all;font-family:Pretendard,Noto Sans;font-size:44px;font-weight:700;line-height:60px;color:#000000;}@media (max-width: 768px){.css-1pq5efy{font-family:Pretendard,Noto Sans;font-size:28px;font-weight:700;line-height:36px;}}</style><h1 class="css-1pq5efy exxr09g14">LLM 에이전트 통신 프로토콜 분석: MCP와 A2A</h1><style data-emotion="css 10mw7nt">.css-10mw7nt{width:100%;margin-top:24px;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;}</style><div class="css-10mw7nt e8dakrw2"><a href="https://github.com/Kiledel" target="_blank" rel="noopener norefferer"><style data-emotion="css frpnj0">.css-frpnj0{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:start;-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start;}</style><div class="css-frpnj0 e1rkrr9a1"><style data-emotion="css dbsmwh">.css-dbsmwh{border-radius:100px;overflow:hidden;isolation:isolate;width:40px;height:40px;background:url(/tech-blog/static/g-avatar-eb97cff692f7c8824cd4cae9bbde67ff.png);-webkit-background-size:contain;background-size:contain;background-repeat:no-repeat;-webkit-background-position:left top;background-position:left top;}</style><div class="css-dbsmwh eeatjbm0"></div><style data-emotion="css e1bhir">.css-e1bhir{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;-webkit-box-align:flex-start;-ms-flex-align:flex-start;align-items:flex-start;-webkit-box-pack:start;-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start;margin-left:12px;}</style><div class="css-e1bhir e1rkrr9a0"><style data-emotion="css 4kn464">.css-4kn464{font-size:14px;font-weight:500;line-height:20px;color:#454545;}</style><p class="css-4kn464 exxr09g5">Kiledel</p><style data-emotion="css 1o98d3a">.css-1o98d3a{font-size:12px;font-weight:400;line-height:20px;color:#b5b5b5;}@media (max-width: 768px){.css-1o98d3a{font-size:12px;font-weight:400;line-height:17px;}}</style><p class="css-1o98d3a exxr09g1">2025년 04월 29일 17:10</p></div></div></a><style data-emotion="css rrlyql">.css-rrlyql{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:end;-ms-flex-pack:end;-webkit-justify-content:flex-end;justify-content:flex-end;}</style><div class="css-rrlyql e8dakrw1"><style data-emotion="css kj38ur">.css-kj38ur{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;}.css-kj38ur:hover .tooltip{visibility:visible;}</style><div class="css-kj38ur e11b06e62"><style data-emotion="css 1mijm5n">.css-1mijm5n{padding:10px;}.css-1mijm5n:hover{background-color:#f5f5f5;border-radius:8px;}</style><button class="css-1mijm5n e1cy5zw40"><style data-emotion="css 13tvgi6">.css-13tvgi6{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;object-fit:contain;}.css-13tvgi6 svg>path{fill:#353535;stroke:#fff!important;stroke-width:3.5%!important;}</style><div style="width:20px;height:20px" class="css-13tvgi6 exmukbp0"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="share-nodes" class="svg-inline--fa fa-share-nodes " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" font-size="20px"><path fill="currentColor" d="M352 224c53 0 96-43 96-96s-43-96-96-96s-96 43-96 96c0 4 .2 8 .7 11.9l-94.1 47C145.4 170.2 121.9 160 96 160c-53 0-96 43-96 96s43 96 96 96c25.9 0 49.4-10.2 66.6-26.9l94.1 47c-.5 3.9-.7 7.8-.7 11.9c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-25.9 0-49.4 10.2-66.6 26.9l-94.1-47c.5-3.9 .7-7.8 .7-11.9s-.2-8-.7-11.9l94.1-47C302.6 213.8 326.1 224 352 224z"></path></svg></div></button><style data-emotion="css 1tfvos9">.css-1tfvos9{position:relative;height:1px;margin-top:-1px;}</style><div class="css-1tfvos9 e11b06e61"><style data-emotion="css 1ieq07i">.css-1ieq07i{visibility:hidden;position:absolute;top:10px;right:-24px;z-index:999;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;-webkit-box-align:flex-start;-ms-flex-align:flex-start;align-items:flex-start;-webkit-box-pack:start;-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start;padding:4px 10px;border-radius:6px;background-color:rgba(0, 0, 0, 0.5);color:#ffffff;font-size:13px;font-weight:400;line-height:20px;text-align:center;}</style><div class="tooltip css-1ieq07i e11b06e60">준비중...</div></div></div><style data-emotion="css 1oaeivz">.css-1oaeivz{margin-right:8px;}</style><div class="css-1oaeivz e8dakrw0"></div><div class="css-kj38ur e11b06e62"><button class="css-1mijm5n e1cy5zw40"><div style="width:20px;height:20px" class="css-13tvgi6 exmukbp0"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" font-size="20px"><path fill="currentColor" d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"></path></svg></div></button><div class="css-1tfvos9 e11b06e61"><div class="tooltip css-1ieq07i e11b06e60">클립보드로 복사</div></div></div></div></div></div><style data-emotion="css 1vba27c">.css-1vba27c{margin:0 auto;margin-bottom:60px;border-radius:20px;overflow:hidden;isolation:isolate;}@media (max-width: 768px){.css-1vba27c{margin-bottom:40px;}}</style><div class="css-1vba27c ele2dtl0"><div data-gatsby-image-wrapper="" style="height:328px;object-fit:contain;border-radius:20px" class="gatsby-image-wrapper gatsby-image-wrapper-constrained"><div style="max-width:897px;display:block"><img alt="" role="presentation" aria-hidden="true" src="data:image/svg+xml;charset=utf-8,%3Csvg%20height=&#x27;512&#x27;%20width=&#x27;897&#x27;%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20version=&#x27;1.1&#x27;%3E%3C/svg%3E" style="max-width:100%;display:block;position:static"/></div><img aria-hidden="true" data-placeholder-image="" style="opacity:1;transition:opacity 500ms linear" decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAYAAAB/Ca1DAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB5ElEQVR42nWSz24UMQyH5/1fgGfgAickhDhwQKiCikuFSrct22q1O7O7M5m/mZkkdj40WZYWBJYs25Hzyfk52aZSVsXiwk0uKa5y4W4fuXocePfpmg+XP1J8f3HD1cPA7T6m3vtCWR8i94fIbRHZGiUzvbIpPftWOfZQNErRCHmtVL3QDJ7WBlrr6Uahm5R+iskfWs91adlUlofKUo1ClpvAi7eGQ9WxL7ZI8CwWY2R0kbPNXlE91RpP8Xs3clnW7JqWx7qh8Z7s2AhXjzPT7Om6nskJS78PkW5UJqdsy5nCOGYfE1RVcQtxf4NbfaTcrqk3K3xbkvWj4oXUeOjg5YUniC4zJuACX0DH1rMzPuXLmQvC2Fb43uDnEZlHNHgyOyuvPjtu84CKozATpg+8+TrTWE1wO/mkpR1nQgiICM45RJ8kOVvWWk1JO0ZeX4aUDzN8uVeGaQEKqoJ3jqoqmaYp6XuyuIid6rNn7SALAjvUfFuXTNZAaNNZkiModV3jvEdEfy9s0fEM/gvoIRwwxzVdecchX9HVG2Q+0lhhmJXdLsf78Mfl/wLrIdA6wygDZX/ADCWj9JjJpCcvFwdrk3bPAc+B6elPGgrHYUyeNx1506d8343pHyb9fi3iNMUZGP854U81QVGWvEZ6zAAAAABJRU5ErkJggg==" alt=""/><picture><source type="image/webp" data-srcset="/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/0070c/a2a_mcp.webp 224w,/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/dbe3c/a2a_mcp.webp 449w,/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/42329/a2a_mcp.webp 897w" sizes="(min-width: 897px) 897px, 100vw"/><img data-gatsby-image-ssr="" data-main-image="" style="opacity:0" sizes="(min-width: 897px) 897px, 100vw" decoding="async" loading="lazy" data-src="/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/5e29d/a2a_mcp.png" data-srcset="/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/96f6a/a2a_mcp.png 224w,/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/b3c64/a2a_mcp.png 449w,/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/5e29d/a2a_mcp.png 897w" alt="thumbnail"/></picture><noscript><picture><source type="image/webp" srcSet="/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/0070c/a2a_mcp.webp 224w,/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/dbe3c/a2a_mcp.webp 449w,/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/42329/a2a_mcp.webp 897w" sizes="(min-width: 897px) 897px, 100vw"/><img data-gatsby-image-ssr="" data-main-image="" style="opacity:0" sizes="(min-width: 897px) 897px, 100vw" decoding="async" loading="lazy" src="/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/5e29d/a2a_mcp.png" srcSet="/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/96f6a/a2a_mcp.png 224w,/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/b3c64/a2a_mcp.png 449w,/tech-blog/static/92d3ba4031c834c10eade96509b58dcf/5e29d/a2a_mcp.png 897w" alt="thumbnail"/></picture></noscript><script type="module">const t="undefined"!=typeof HTMLImageElement&&"loading"in HTMLImageElement.prototype;if(t){const t=document.querySelectorAll("img[data-main-image]");for(let e of t){e.dataset.src&&(e.setAttribute("src",e.dataset.src),e.removeAttribute("data-src")),e.dataset.srcset&&(e.setAttribute("srcset",e.dataset.srcset),e.removeAttribute("data-srcset"));const t=e.parentNode.querySelectorAll("source[data-srcset]");for(let e of t)e.setAttribute("srcset",e.dataset.srcset),e.removeAttribute("data-srcset");e.complete&&(e.style.opacity=1,e.parentNode.parentNode.querySelector("[data-placeholder-image]").style.opacity=0)}}</script></div></div><style data-emotion="css su2zsa">.css-su2zsa{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;width:100%;word-break:keep-all;line-height:1.8;font-size:16px;font-weight:400;color:#3F4758;}.css-su2zsa .responsive-image{width:100%;}.css-su2zsa h1,.css-su2zsa h2,.css-su2zsa h3{margin-bottom:16px;}.css-su2zsa *+h1{margin-top:60px;}.css-su2zsa *+h2{margin-top:48px;}.css-su2zsa *+h3{margin-top:40px;}.css-su2zsa h1+h2,.css-su2zsa h2+h3{margin-top:12px;}.css-su2zsa hr+h1,.css-su2zsa hr+h2,.css-su2zsa hr+h3{margin-top:0;}.css-su2zsa h1{font-size:32px;font-weight:700;line-height:44px;color:#2A2E36;}@media (max-width: 768px){.css-su2zsa h1{font-size:24px;font-weight:700;line-height:29px;}}.css-su2zsa h2{font-size:28px;font-weight:700;color:#2A2E36;}@media (max-width: 768px){.css-su2zsa h2{font-size:22px;}}.css-su2zsa h3{font-size:22px;color:#2A2E36;font-weight:600;}@media (max-width: 768px){.css-su2zsa h3{font-size:20px;font-weight:700;line-height:26px;font-weight:600;}}.css-su2zsa p{margin:8px 0;font-weight:400;color:#3F4758;}.css-su2zsa strong{font-weight:600;color:#2A2E36;}.css-su2zsa ol,.css-su2zsa ul{margin:10px 0px;margin-left:20px;padding-left:16px;line-height:2;}.css-su2zsa ol>li{color:#3B424F;list-style:decimal;padding-left:2px;}.css-su2zsa ul>li{color:#3B424F;list-style:disc;}.css-su2zsa ul>li ul>li{list-style:circle;}.css-su2zsa ul>li ul>li ul>li{list-style:square;}.css-su2zsa ul>li ul>li ul>li ul>li{list-style:outside;}.css-su2zsa li{padding:2px 0px;}.css-su2zsa blockquote{margin:16px 0;padding:20px;border-left:4px solid #CCCED9;background-color:#F6F8FC;}.css-su2zsa blockquote p{margin:0;color:#717784;}.css-su2zsa hr{border:1px dashed #E5E9F2;margin:60px 0;}.css-su2zsa a{color:#5E9BF8;font-weight:500;-webkit-text-decoration:underline;text-decoration:underline;}.css-su2zsa a strong{color:#5E9BF8;}.css-su2zsa a:hover{-webkit-text-decoration:underline;text-decoration:underline;text-decoration-style:double;color:#4087F2;}.css-su2zsa summary{margin:16px 0px;}.css-su2zsa summary::marker{color:#e12990;}.css-su2zsa summary strong{padding:2px;}.css-su2zsa summary strong:hover{-webkit-text-decoration:underline;text-decoration:underline;text-decoration-style:wavy;text-decoration-color:#e12990;}.css-su2zsa table{margin:20px 0px;border-collapse:separate;border-spacing:0;border:1px solid #CCCED9;}.css-su2zsa thead{background-color:#E5E9F2;}.css-su2zsa thead th{border-right:1px solid #CCCED9;border-bottom:1px solid #CCCED9;padding:16px;font-weight:500;color:#2A2E36;}.css-su2zsa td{border-bottom:1px solid #CCCED9;border-right:1px solid #CCCED9;padding:16px;font-weight:400;color:#2A2E36;}.css-su2zsa tr:last-child td{border-bottom:0px;}.css-su2zsa td:last-child,.css-su2zsa th:last-child{border-right:0px;}.css-su2zsa figcaption{text-align:right;font-size:13px;color:#757575;margin-top:-2px;margin-bottom:20px;}.css-su2zsa code[class*='language-'],.css-su2zsa pre[class*='language-']{font-family:'Fira Code','Consolas','Monaco','Andale Mono','Ubuntu Mono',monospace;font-weight:500;font-size:15px;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.75;-moz-tab-size:2;-o-tab-size:2;tab-size:2;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none;-ms-overflow-style:none;overflow:-moz-scrollbars-none;}.css-su2zsa code[class*='language-text']{background-color:#faf0f5;color:#e12990;border:1.5px dashed #e12990;padding:2px 4px;margin:0px 4px;font-family:'Fira Code','Consolas','Monaco','Andale Mono','Ubuntu Mono',monospace;font-weight:500;font-size:15px;}.css-su2zsa pre[class*='language-']::-webkit-scrollbar{background-color:none;}.css-su2zsa .gatsby-code-button-container{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;height:2em;background-color:#1e1e1e;border-top-left-radius:0.6em;border-top-right-radius:0.6em;}.css-su2zsa .gatsby-code-button{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row-reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;gap:4px;padding-top:0.2em;padding-right:1.5em;font-size:13px;font-weight:400;color:#909090;}.css-su2zsa .gatsby-code-button svg{stroke:#909090;}.css-su2zsa .gatsby-code-button:hover{color:#ccc;}.css-su2zsa .gatsby-code-button:hover svg{stroke:#ccc;}.css-su2zsa .gatsby-code-button-container::after{content:'';position:absolute;width:6em;height:1.75em;top:0.2em;left:0.4em;background:url(/tech-blog/static/code-block-bb27b97066ca2625a4469d7dde9827e8.png);-webkit-background-size:contain;background-size:contain;background-repeat:no-repeat;-webkit-background-position:left top;background-position:left top;border-top-left-radius:0.6em;}.css-su2zsa .gatsby-highlight{position:relative;display:block;border-top:2em solid #1e1e1e;border-top-left-radius:0.6em;border-top-right-radius:0.6em;}.css-su2zsa .gatsby-highlight-code-line{display:block;background-color:#353b46;border-left:3px solid #aaa;font-family:'Fira Code';color:inherit;}.css-su2zsa .gatsby-remark-code-title{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;width:80%;margin-left:10%;margin-top:2.5em;margin-bottom:-4.5em;font-family:'Fira Code';font-size:13px;color:#aaa;z-index:999;}.css-su2zsa pre[class*='language-']{margin:0;padding:1.4em 1.6em;overflow:auto;border-bottom-left-radius:0.6em;border-bottom-right-radius:0.6em;}.css-su2zsa pre>code[class*='language-'],.css-su2zsa pre[class*='language-']{font-family:'Fira Code';font-weight:500;background-color:#282c34;border:0px;font-size:15px;color:#ddd;}.css-su2zsa pre>code[class*='language-'] .token,.css-su2zsa pre[class*='language-'] .token{font-family:'Fira Code';}.css-su2zsa .token.comment,.css-su2zsa .token.block-comment,.css-su2zsa .token.prolog,.css-su2zsa .token.doctype,.css-su2zsa .token.cdata{color:#616161;}.css-su2zsa .token.punctuation{color:#e0e0e0;}.css-su2zsa .token.tag,.css-su2zsa .token.attr-name,.css-su2zsa .token.namespace,.css-su2zsa .token.deleted{color:#e06c75;}.css-su2zsa .token.function-name{color:#6196cc;}.css-su2zsa .token.boolean,.css-su2zsa .token.number,.css-su2zsa .token.function{color:#ff9100;}.css-su2zsa .token.property,.css-su2zsa .token.class-name,.css-su2zsa .token.constant,.css-su2zsa .token.symbol{color:#ffff00;}.css-su2zsa .token.selector,.css-su2zsa .token.important,.css-su2zsa .token.atrule,.css-su2zsa .token.keyword,.css-su2zsa .token.builtin{color:#b388ff;}.css-su2zsa .token.string,.css-su2zsa .token.char,.css-su2zsa .token.attr-value,.css-su2zsa .token.regex,.css-su2zsa .token.variable{color:#00e676;}.css-su2zsa .token.operator,.css-su2zsa .token.entity,.css-su2zsa .token.url{color:#67cdcc;}.css-su2zsa .token.important,.css-su2zsa .token.bold{font-weight:bold;}.css-su2zsa .token.italic{font-style:italic;}.css-su2zsa .token.entity{cursor:help;}.css-su2zsa .token.inserted{color:green;}</style><div class="css-su2zsa e1xbcuo30"><h1 id="ai-에이전트-통신-프로토콜-분석-mcp와-a2a" style="position:relative;"><a href="#ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-%ED%86%B5%EC%8B%A0-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C-%EB%B6%84%EC%84%9D-mcp%EC%99%80-a2a" aria-label="ai 에이전트 통신 프로토콜 분석 mcp와 a2a permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>AI 에이전트 통신 프로토콜 분석: MCP와 A2A</h1>
+<blockquote>
+<p>본 문서는 최근 에이전트 기술의 핵심적인 두 가지 개념, **MCP(Model Context Protocol)**와 <strong>A2A(Agent-to-Agent) 프로토콜</strong>을 각각 분석하는 것을 목표로 합니다. 특히, LLM 모델이 외부 도구 및 데이터와 상호작용하는 표준화된 방식인 MCP를 이해하고, 최근 화제가 되고 있는 A2A 프로토콜이 어떻게 구성되어 있는지 탐구하고자 합니다.</p>
+</blockquote>
+<hr>
+<h2 id="1-mcp-model-context-protocol" style="position:relative;"><a href="#1-mcp-model-context-protocol" aria-label="1 mcp model context protocol permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1. MCP (Model Context Protocol)</h2>
+<h3 id="1-1-mcp의-의미-llm이-외부-소통을-위한-통신-규약" style="position:relative;"><a href="#1-1-mcp%EC%9D%98-%EC%9D%98%EB%AF%B8-llm%EC%9D%B4-%EC%99%B8%EB%B6%80-%EC%86%8C%ED%86%B5%EC%9D%84-%EC%9C%84%ED%95%9C-%ED%86%B5%EC%8B%A0-%EA%B7%9C%EC%95%BD" aria-label="1 1 mcp의 의미 llm이 외부 소통을 위한 통신 규약 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1-1. MCP의 의미: LLM이 외부 소통을 위한 통신 규약</h3>
+<p><strong>MCP</strong>는 LLM 모델(예: GPT)이 외부의 다양한 데이터나 도구(예: 내 컴퓨터의 파일, 데이터베이스, 웹 API)와 표준화된 방식으로 안전하게 소통하기 위한 **‘통신 규약(프로토콜)‘**입니다.</p>
+<p>흔히 <strong>USB 포트</strong>에 비유됩니다. 전 세계의 모든 전자제품이 USB 포트라는 표준 규격으로 쉽게 연결되는 것처럼, MCP는 어떤 LLM 모델이든, 어떤 코드 에디터든 “MCP”라는 표준화된 포트를 통해 쉽게 연결할 수 있도록 만들어 줍니다.</p>
+<h3 id="1-2-mcp-이전의-llm-한계점" style="position:relative;"><a href="#1-2-mcp-%EC%9D%B4%EC%A0%84%EC%9D%98-llm-%ED%95%9C%EA%B3%84%EC%A0%90" aria-label="1 2 mcp 이전의 llm 한계점 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1-2. MCP 이전의 LLM 한계점</h3>
+<h4 id="️-함수-호출-pre-settings" style="position:relative;"><a href="#%EF%B8%8F-%ED%95%A8%EC%88%98-%ED%98%B8%EC%B6%9C-pre-settings" aria-label="️ 함수 호출 pre settings permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ 함수 호출 (pre-Settings)</h4>
+<ul>
+<li>기존에는 LLM 프롬프트 엔지니어링을 통해 구조화된 출력(Structured Output)을 유도했습니다.</li>
+<li><strong>한계</strong>: 텍스트 파싱(Text Parsing) 방식은 원하는 형식으로 정확히 출력되지 않는 경우가 많아 LLM 기반 애플리케이션의 불안정성을 높였습니다.</li>
+</ul>
+<h4 id="️-도구-호출-function-calling" style="position:relative;"><a href="#%EF%B8%8F-%EB%8F%84%EA%B5%AC-%ED%98%B8%EC%B6%9C-function-calling" aria-label="️ 도구 호출 function calling permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ 도구 호출 (Function Calling)</h4>
+<p>2023년 7월, OpenAI가 <strong>Function Calling</strong> 기능을 공개하며 사용자의 자연어 요청을 이해하고 외부 시스템의 특정 기능(함수)을 호출할 수 있게 되었습니다.</p>
+<p>A. <strong>함수 정의 및 메시지 전달</strong>: 모델에게 호출 가능한 함수(<code class="language-text">Name</code>, <code class="language-text">Description</code>, <code class="language-text">Args</code>)와 사용자 요청을 함께 전달합니다.
+B. <strong>함수 호출</strong>: 모델은 호출할 함수 이름과 입력 인자(<code class="language-text">args</code>)를 결정하여 반환합니다.
+C. <strong>외부 함수 실행</strong>: 모델로부터 받은 정보를 바탕으로 실제 함수를 실행합니다.
+D. <strong>실행 결과 반환</strong>: 실행 결과를 다시 모델에게 전달합니다 (Add Contextual Message).
+E. <strong>최종 응답 생성</strong>: 모델은 함수 실행 결과를 포함하여 사용자에게 최종 응답을 생성합니다.</p>
+<h4 id="️-function-calling-방식의-한계점-m--n-통합-문제" style="position:relative;"><a href="#%EF%B8%8F-function-calling-%EB%B0%A9%EC%8B%9D%EC%9D%98-%ED%95%9C%EA%B3%84%EC%A0%90-m--n-%ED%86%B5%ED%95%A9-%EB%AC%B8%EC%A0%9C" aria-label="️ function calling 방식의 한계점 m  n 통합 문제 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ Function Calling 방식의 한계점: M * N 통합 문제</h4>
+<ul>
+<li><strong>상태 유지 어려움</strong>: 단일 요청-응답 형태로 작동하여 각 호출이 독립적이었습니다.</li>
+<li><strong>복잡한 작업 처리</strong>: 여러 단계의 워크플로우나 다양한 데이터 동시 활용에 부적합했습니다.</li>
+<li><strong>플랫폼 단편화</strong>: LLM 모델이나 API마다 다른 함수 호출 방식을 사용해 반복적인 구현이 필요했습니다.</li>
+</ul>
+<p>이는 각 모델과 도구를 연결할 때마다 개별적인 ‘맞춤형 어댑터’를 만들어야 하는 번거로움, 즉 **‘M x N 통합 문제’**로 이어졌습니다.</p>
+<h3 id="1-3-mcp의-배경-및-구성" style="position:relative;"><a href="#1-3-mcp%EC%9D%98-%EB%B0%B0%EA%B2%BD-%EB%B0%8F-%EA%B5%AC%EC%84%B1" aria-label="1 3 mcp의 배경 및 구성 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1-3. MCP의 배경 및 구성</h3>
+<h4 id="️-mcp-등장-배경" style="position:relative;"><a href="#%EF%B8%8F-mcp-%EB%93%B1%EC%9E%A5-%EB%B0%B0%EA%B2%BD" aria-label="️ mcp 등장 배경 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ MCP 등장 배경</h4>
+<ul>
+<li><strong>Function Calling의 비효율성</strong>: 플랫폼, 도구 별로 제각기 다른 접근 로직이 필요했습니다.</li>
+<li><strong>Context 기반 답변 필요</strong>: 유용한 답변을 제공하기 위해 적절한 맥락(Context)에 기반한 LLM의 행동이 필요했습니다.</li>
+<li><strong>환각(Hallucination) 발생</strong>: 오류가 난 데이터조차 정상처럼 전달되는 현상을 방지하고, 사용자 개인화된 맥락을 반영할 필요가 있었습니다.</li>
+</ul>
+<h4 id="️-function-calling-vs-mcp" style="position:relative;"><a href="#%EF%B8%8F-function-calling-vs-mcp" aria-label="️ function calling vs mcp permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ Function Calling vs MCP</h4>
+<ul>
+<li><strong>Function Calling</strong>: LLM이 정해진 규격으로 외부와 상호작용을 시작합니다. 특정 작업을 수행하기 위한 **“어떻게(How)“**에 가깝습니다.</li>
+<li><strong>Model Context Protocol</strong>: 다양한 도구와 맥락을 일관된 방식으로 활용하는 규약입니다. **“무엇을(What)”, “왜(Why)”, “언제(When)“**까지 고려합니다.</li>
+</ul>
+<blockquote>
+<p>2024년 11월, Claude 모델을 개발한 Anthropic에서 자사 도구로 활용하던 기술을 오픈 소스로 공개했습니다. MCP는 AI 모델(Model)이 외부 자원 간 맥락(Context) 정보를 일관된 형태로 주고받을 수 있도록 정의한 표준 규약입니다.</p>
+</blockquote>
+<h4 id="️-mcp-핵심-아키텍처-호스트-클라이언트-서버-구조" style="position:relative;"><a href="#%EF%B8%8F-mcp-%ED%95%B5%EC%8B%AC-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98-%ED%98%B8%EC%8A%A4%ED%8A%B8-%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8-%EC%84%9C%EB%B2%84-%EA%B5%AC%EC%A1%B0" aria-label="️ mcp 핵심 아키텍처 호스트 클라이언트 서버 구조 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ MCP 핵심 아키텍처: 호스트-클라이언트-서버 구조</h4>
+<p>MCP는 **AI 애플리케이션(호스트)**가 여러 <strong>MCP 클라이언트</strong>를 관리하고, 각 클라이언트는 개별 <strong>MCP 서버</strong>들과 1:1로 연결하여 필요한 맥락과 도구를 동적으로 조율하는 모듈식 구조를 가집니다. 이를 통해 AI 에이전트와 도구 간의 <strong>수직적인 연결을 표준화</strong>했습니다.</p>
+<ul>
+<li><strong>MCP Host</strong>: LLM 통합의 오케스트레이터. LLM 애플리케이션(예: Claude Desktop, Cursor AI IDE)이 해당됩니다. 여러 서버 정보를 종합하여 LLM에 전달합니다.</li>
+<li><strong>MCP Client</strong>: MCP 프로토콜 어댑터. 호스트 내에서 실행되며 개별 MCP 서버와 1:1로 통신 채널을 격리하여 안정성을 확보합니다.</li>
+<li><strong>MCP Server</strong>: 특화된 맥락 및 도구 제공자. 파일 시스템, DB, API 등 특정 데이터 소스나 도구에 대한 접근을 제공하며 독립적으로 운영됩니다.</li>
+</ul>
+<h4 id="️-mcp-표준-전송-메커니즘--통신-방식" style="position:relative;"><a href="#%EF%B8%8F-mcp-%ED%91%9C%EC%A4%80-%EC%A0%84%EC%86%A1-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98--%ED%86%B5%EC%8B%A0-%EB%B0%A9%EC%8B%9D" aria-label="️ mcp 표준 전송 메커니즘  통신 방식 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ MCP 표준 전송 메커니즘 / 통신 방식</h4>
+<ul>
+<li><strong>메시지 형태</strong>: 요청(Request), 응답(Response), 알림(Notification)</li>
+<li><strong>통신 프로토콜</strong>: <strong>JSON-RPC 2.0</strong> 기반</li>
+<li><strong>인증 (Authorization)</strong>: <strong>OAuth 2.1</strong> 표준 활용</li>
+<li><strong>전송 방식</strong>:
+<ul>
+<li><strong>STDIO (Standard I/O)</strong>: 주로 로컬에서 사용. 간단하고 빠른 연결에 적합합니다.</li>
+<li><strong>Streamable HTTP</strong>: 주로 원격/외부에서 사용. HTTP POST와 Server-Sent Events(SSE)를 결합하여 양방향 스트리밍을 지원합니다.</li>
+</ul>
+</li>
+<li><strong>MCP 도구 바인딩 플랫폼</strong>: <a href="https://smithery.ai/" target="_blank" rel="nofollow">smithery.ai</a></li>
+</ul>
+<h3 id="1-4-mcp-구현-예제" style="position:relative;"><a href="#1-4-mcp-%EA%B5%AC%ED%98%84-%EC%98%88%EC%A0%9C" aria-label="1 4 mcp 구현 예제 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1-4. MCP 구현 예제</h3>
+<ul>
+<li><strong>도움 사이트</strong>:
+<ul>
+<li><a href="https://wikidocs.net/book/17905" target="_blank" rel="nofollow">wikidocs.net/book/17905</a></li>
+<li><a href="https://github.com/kwonskdev/nl_map_search_mcp" target="_blank" rel="nofollow">github.com/kwonskdev/nl_map_search_mcp</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="mcp-server-구현-python-fastmcp" style="position:relative;"><a href="#mcp-server-%EA%B5%AC%ED%98%84-python-fastmcp" aria-label="mcp server 구현 python fastmcp permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>MCP Server 구현 (Python FastMCP)</h4>
+<div
+              class="gatsby-code-button-container"
+              data-toaster-id="30076143852658668000"
+              data-toaster-class="gatsby-code-button-toaster"
+              data-toaster-text-class="gatsby-code-button-toaster-text"
+              data-toaster-text="📋  코드를 복사했습니다."
+              data-toaster-duration="3000"
+              onClick="copyToClipboard(`# 출처: https://gofastmcp.com/deployment/running-server
+from typing import Any
+import httpx
+from mcp.server.fastmcp import FastMCP
+
+# &quot;name-origin&quot;이라는 이름으로 MCP 서버 객체를 생성합니다.
+mcp = FastMCP(&quot;name-origin&quot;)
+
+# API 요청을 보낼 기본 URL을 정의합니다.
+base_url = &quot;https://api.nationalize.io&quot;
+
+@mcp.tool()
+async def predict_origin(self, name: str) -> dict:
+    &quot;&quot;&quot;Nationalize API를 사용하여 주어진 이름의 출신 국가를 예측합니다.&quot;&quot;&quot;
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f&quot;{base_url}/?name={name}&quot;)
+        return response.json()
+
+@mcp.tool()
+async def batch_predict(self, names: list[str]) -> dict:
+    &quot;&quot;&quot;여러 이름의 출신 국가를 한 번에 예측합니다.&quot;&quot;&quot;
+    results = {}
+    for name in names:
+        results[name] = await self.predict_origin(name)
+    return results
+
+if __name__ == &quot;__main__&quot;:
+    print(&quot;이름 출신 국가 서버 시작 중...&quot;)
+    mcp.run(transport='stdio')`, `30076143852658668000`)"
+            >
+              <div
+                class="gatsby-code-button"
+                data-tooltip=""
+              >
+                copy<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              </div>
+            </div>
+<div class="gatsby-highlight" data-language="python"><pre class="language-python"><code class="language-python"><span class="token comment"># 출처: https://gofastmcp.com/deployment/running-server</span>
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> Any
+<span class="token keyword">import</span> httpx
+<span class="token keyword">from</span> mcp<span class="token punctuation">.</span>server<span class="token punctuation">.</span>fastmcp <span class="token keyword">import</span> FastMCP
+
+<span class="token comment"># "name-origin"이라는 이름으로 MCP 서버 객체를 생성합니다.</span>
+mcp <span class="token operator">=</span> FastMCP<span class="token punctuation">(</span><span class="token string">"name-origin"</span><span class="token punctuation">)</span>
+
+<span class="token comment"># API 요청을 보낼 기본 URL을 정의합니다.</span>
+base_url <span class="token operator">=</span> <span class="token string">"https://api.nationalize.io"</span>
+
+<span class="token decorator annotation punctuation">@mcp<span class="token punctuation">.</span>tool</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">predict_origin</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> name<span class="token punctuation">:</span> <span class="token builtin">str</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">dict</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Nationalize API를 사용하여 주어진 이름의 출신 국가를 예측합니다."""</span>
+    <span class="token keyword">async</span> <span class="token keyword">with</span> httpx<span class="token punctuation">.</span>AsyncClient<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">as</span> client<span class="token punctuation">:</span>
+        response <span class="token operator">=</span> <span class="token keyword">await</span> client<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>base_url<span class="token punctuation">}</span></span><span class="token string">/?name=</span><span class="token interpolation"><span class="token punctuation">{</span>name<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token decorator annotation punctuation">@mcp<span class="token punctuation">.</span>tool</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">batch_predict</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> names<span class="token punctuation">:</span> <span class="token builtin">list</span><span class="token punctuation">[</span><span class="token builtin">str</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">dict</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""여러 이름의 출신 국가를 한 번에 예측합니다."""</span>
+    results <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    <span class="token keyword">for</span> name <span class="token keyword">in</span> names<span class="token punctuation">:</span>
+        results<span class="token punctuation">[</span>name<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">await</span> self<span class="token punctuation">.</span>predict_origin<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> results
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"이름 출신 국가 서버 시작 중..."</span><span class="token punctuation">)</span>
+    mcp<span class="token punctuation">.</span>run<span class="token punctuation">(</span>transport<span class="token operator">=</span><span class="token string">'stdio'</span><span class="token punctuation">)</span></code></pre></div>
+<h4 id="mcp-client-구현" style="position:relative;"><a href="#mcp-client-%EA%B5%AC%ED%98%84" aria-label="mcp client 구현 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>MCP Client 구현</h4>
+<div
+              class="gatsby-code-button-container"
+              data-toaster-id="37383126048567170000"
+              data-toaster-class="gatsby-code-button-toaster"
+              data-toaster-text-class="gatsby-code-button-toaster-text"
+              data-toaster-text="📋  코드를 복사했습니다."
+              data-toaster-duration="3000"
+              onClick="copyToClipboard(`from mcp import ClientSession, StdioServerParameters, types
+from mcp.client.stdio import stdio_client
+import asyncio
+
+# STDIO 방식으로 서버에 연결하기 위한 파라미터를 설정합니다.
+server_params = StdioServerParameters(
+    command=&quot;python&quot;,
+    args=[&quot;example_server.py&quot;],
+)
+
+async def run():
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            
+            # 서버가 제공하는 도구 목록을 가져옵니다.
+            tools = await session.list_tools()
+            print(f&quot;Available tools: {tools}&quot;)
+
+            # 'predict_origin' 도구를 호출하고 결과를 받습니다.
+            result = await session.call_tool(&quot;predict_origin&quot;, arguments={&quot;name&quot;: &quot;michael&quot;})
+            print(f&quot;Tool call result: {result}&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    asyncio.run(run())`, `37383126048567170000`)"
+            >
+              <div
+                class="gatsby-code-button"
+                data-tooltip=""
+              >
+                copy<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              </div>
+            </div>
+<div class="gatsby-highlight" data-language="python"><pre class="language-python"><code class="language-python"><span class="token keyword">from</span> mcp <span class="token keyword">import</span> ClientSession<span class="token punctuation">,</span> StdioServerParameters<span class="token punctuation">,</span> types
+<span class="token keyword">from</span> mcp<span class="token punctuation">.</span>client<span class="token punctuation">.</span>stdio <span class="token keyword">import</span> stdio_client
+<span class="token keyword">import</span> asyncio
+
+<span class="token comment"># STDIO 방식으로 서버에 연결하기 위한 파라미터를 설정합니다.</span>
+server_params <span class="token operator">=</span> StdioServerParameters<span class="token punctuation">(</span>
+    command<span class="token operator">=</span><span class="token string">"python"</span><span class="token punctuation">,</span>
+    args<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"example_server.py"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">async</span> <span class="token keyword">with</span> stdio_client<span class="token punctuation">(</span>server_params<span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token punctuation">(</span>read<span class="token punctuation">,</span> write<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">async</span> <span class="token keyword">with</span> ClientSession<span class="token punctuation">(</span>read<span class="token punctuation">,</span> write<span class="token punctuation">)</span> <span class="token keyword">as</span> session<span class="token punctuation">:</span>
+            <span class="token keyword">await</span> session<span class="token punctuation">.</span>initialize<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            
+            <span class="token comment"># 서버가 제공하는 도구 목록을 가져옵니다.</span>
+            tools <span class="token operator">=</span> <span class="token keyword">await</span> session<span class="token punctuation">.</span>list_tools<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Available tools: </span><span class="token interpolation"><span class="token punctuation">{</span>tools<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+            <span class="token comment"># 'predict_origin' 도구를 호출하고 결과를 받습니다.</span>
+            result <span class="token operator">=</span> <span class="token keyword">await</span> session<span class="token punctuation">.</span>call_tool<span class="token punctuation">(</span><span class="token string">"predict_origin"</span><span class="token punctuation">,</span> arguments<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"michael"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Tool call result: </span><span class="token interpolation"><span class="token punctuation">{</span>result<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre></div>
+<hr>
+<h2 id="2-a2a-agent-to-agent" style="position:relative;"><a href="#2-a2a-agent-to-agent" aria-label="2 a2a agent to agent permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2. A2A (Agent-to-Agent)</h2>
+<h3 id="2-1-a2a-이전의-멀티-에이전트-한계점" style="position:relative;"><a href="#2-1-a2a-%EC%9D%B4%EC%A0%84%EC%9D%98-%EB%A9%80%ED%8B%B0-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-%ED%95%9C%EA%B3%84%EC%A0%90" aria-label="2 1 a2a 이전의 멀티 에이전트 한계점 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2-1. A2A 이전의 멀티 에이전트 한계점</h3>
+<h4 id="️-a2a-등장-배경" style="position:relative;"><a href="#%EF%B8%8F-a2a-%EB%93%B1%EC%9E%A5-%EB%B0%B0%EA%B2%BD" aria-label="️ a2a 등장 배경 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ A2A 등장 배경</h4>
+<ul>
+<li><strong>MCP 이후</strong>: MCP는 ‘Agent-Tool’ 간의 <strong>수직적</strong> 통합 문제를 해결했지만, 에이전트 간의 <strong>수평적</strong> 통합 표준이 필요해졌습니다.</li>
+<li><strong>프레임워크 비호환성</strong>: LangGraph, AutoGen, CrewAI 등 다양한 프레임워크 간의 상호 운용성 문제가 발생했습니다. 에이전트들이 서로 다른 프로젝트에 흩어져 있으면 협업이 어려워지고, 하나의 프로젝트에서 모든 것을 관리하면 의존성이 과도해지는 문제가 있었습니다 (Monolithic → Microservices 전환 필요).</li>
+</ul>
+<h4 id="️-a2a-프로토콜" style="position:relative;"><a href="#%EF%B8%8F-a2a-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C" aria-label="️ a2a 프로토콜 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ A2A 프로토콜</h4>
+<blockquote>
+<p><strong>A2A(Agent-to-Agent) 프로토콜</strong>은 AI 에이전트 간 구조화된 통신을 가능하게 하는 개방형 프로토콜입니다.</p>
+</blockquote>
+<ul>
+<li><strong>첫 등장</strong>: 2025년 4월, Google Cloud Next 2025 컨퍼런스에서 발표되었습니다.</li>
+<li><strong>오픈 소스화</strong>: 2025년 6월, 프로젝트를 리눅스 재단에 기부하여 벤더 종속 없이 산업 표준으로 성장할 기반을 마련했습니다. (구글 외 AWS, Microsoft, SAP 등 참여)</li>
+<li><strong>GitHub</strong>: <a href="https://github.com/a2aproject/A2A" target="_blank" rel="nofollow">github.com/a2aproject/A2A</a></li>
+</ul>
+<h4 id="️-a2a-핵심-가치-및-설계-원칙" style="position:relative;"><a href="#%EF%B8%8F-a2a-%ED%95%B5%EC%8B%AC-%EA%B0%80%EC%B9%98-%EB%B0%8F-%EC%84%A4%EA%B3%84-%EC%9B%90%EC%B9%99" aria-label="️ a2a 핵심 가치 및 설계 원칙 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ A2A 핵심 가치 및 설계 원칙</h4>
+<ul>
+<li><strong>핵심 가치</strong>: 서로 다른 기술/플랫폼으로 만들어진 <strong>이기종(Heterogeneous) 에이전트 간의 소통</strong>을 지원합니다.</li>
+<li><strong>설계 원칙</strong>:
+<ol>
+<li><strong>에이전트 능력 수용</strong>: 메모리, 도구를 공유하지 않아도 협업 가능.</li>
+<li><strong>기존 표준 기반 개발</strong>: HTTP, SSE, JSON-RPC 등 널리 쓰이는 기술 기반.</li>
+<li><strong>기본적인 보안 보장</strong>: 엔터프라이즈급 인증 및 승인 지원.</li>
+<li><strong>장기 실행 작업 지원</strong>: 실시간 피드백, 알림, 상태 업데이트 제공.</li>
+<li><strong>다양한 모달리티 지원</strong>: 텍스트뿐만 아니라 오디오, 비디오 스트리밍 지원.</li>
+</ol>
+</li>
+</ul>
+<blockquote>
+<p><strong>A2A의 핵심</strong>: <strong>기능의 서비스화</strong>. 각 에이전트가 자신의 핵심 기능을 ‘서비스’로 외부에 제공합니다.</p>
+</blockquote>
+<h4 id="️-a2a의-핵심-비유-ai-에이전트들의-sns" style="position:relative;"><a href="#%EF%B8%8F-a2a%EC%9D%98-%ED%95%B5%EC%8B%AC-%EB%B9%84%EC%9C%A0-ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%93%A4%EC%9D%98-sns" aria-label="️ a2a의 핵심 비유 ai 에이전트들의 sns permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ A2A의 핵심 비유: AI 에이전트들의 SNS</h4>
+<p>MCP가 에이전트와 도구를 연결한다면, A2A는 에이전트와 에이전트를 연결하여 네트워크를 형성합니다.</p>
+<ul>
+<li>프로필(<strong>Agent Card</strong>)을 공개하고</li>
+<li>친구를 맺으며(<strong>Agent Discovery</strong>)</li>
+<li>메시지를 보내 요청하고(<strong>Task / Message</strong>)</li>
+<li>상호작용하며 협력합니다(<strong>Artifact</strong>).</li>
+</ul>
+<h3 id="2-2-a2a-주요-구성-요소" style="position:relative;"><a href="#2-2-a2a-%EC%A3%BC%EC%9A%94-%EA%B5%AC%EC%84%B1-%EC%9A%94%EC%86%8C" aria-label="2 2 a2a 주요 구성 요소 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2-2. A2A 주요 구성 요소</h3>
+<ul>
+<li><strong>Core Actors</strong>: <code class="language-text">User</code>, <code class="language-text">A2A Client</code> (Client Agent), <code class="language-text">A2A Server</code> (Remote Agent)</li>
+<li><strong>Fundamental Elements</strong>: <code class="language-text">Agent Card</code>, <code class="language-text">Task</code>, <code class="language-text">Message</code>, <code class="language-text">Part</code>, <code class="language-text">Artifact</code></li>
+<li><strong>Interaction Mechanism</strong>: <code class="language-text">Request/Response</code> (Polling), <code class="language-text">Streaming</code> (SSE), <code class="language-text">Push Notifications</code> (Webhook)</li>
+</ul>
+<h4 id="️-agent-card-에이전트의-명함" style="position:relative;"><a href="#%EF%B8%8F-agent-card-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EC%9D%98-%EB%AA%85%ED%95%A8" aria-label="️ agent card 에이전트의 명함 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ Agent Card: 에이전트의 ‘명함’</h4>
+<p>A2A 서버를 설명하는 JSON 메타데이터로, 일반적으로 <code class="language-text">/.well-known/agent.json</code> 경로를 통해 공개적으로 접근할 수 있습니다.</p>
+<table>
+<thead>
+<tr>
+<th align="left">필드명</th>
+<th align="left">타입</th>
+<th align="left">필수</th>
+<th align="left">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code class="language-text">protocolVersion</code></td>
+<td align="left">string</td>
+<td align="left">Yes</td>
+<td align="left">A2A 프로토콜의 버전입니다.</td>
+</tr>
+<tr>
+<td align="left"><code class="language-text">name</code></td>
+<td align="left">string</td>
+<td align="left">Yes</td>
+<td align="left">사람이 읽을 수 있는 에이전트의 이름입니다.</td>
+</tr>
+<tr>
+<td align="left"><code class="language-text">description</code></td>
+<td align="left">string</td>
+<td align="left">Yes</td>
+<td align="left">사람이 읽을 수 있는 설명입니다.</td>
+</tr>
+<tr>
+<td align="left"><code class="language-text">url</code></td>
+<td align="left">string</td>
+<td align="left">Yes</td>
+<td align="left">에이전트의 A2A 서비스를 위한 기본 URL입니다.</td>
+</tr>
+<tr>
+<td align="left"><code class="language-text">version</code></td>
+<td align="left">string</td>
+<td align="left">Yes</td>
+<td align="left">에이전트 또는 A2A 구현 버전의 문자열입니다.</td>
+</tr>
+<tr>
+<td align="left"><code class="language-text">capabilities</code></td>
+<td align="left">AgentCapabilities</td>
+<td align="left">Yes</td>
+<td align="left">지원하는 A2A 프로토콜 기능을 지정합니다.</td>
+</tr>
+<tr>
+<td align="left"><code class="language-text">defaultInputModes</code></td>
+<td align="left">string[]</td>
+<td align="left">Yes</td>
+<td align="left">에이전트가 허용하는 입력 미디어 유형입니다.</td>
+</tr>
+<tr>
+<td align="left"><code class="language-text">defaultOutputModes</code></td>
+<td align="left">string[]</td>
+<td align="left">Yes</td>
+<td align="left">에이전트가 생성하는 출력 미디어 유형입니다.</td>
+</tr>
+<tr>
+<td align="left"><code class="language-text">skills</code></td>
+<td align="left">AgentSkill[]</td>
+<td align="left">Yes</td>
+<td align="left">스킬 배열입니다. 최소 하나 이상의 스킬이 있어야 합니다.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="️-task-message-part-artifact" style="position:relative;"><a href="#%EF%B8%8F-task-message-part-artifact" aria-label="️ task message part artifact permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ Task, Message, Part, Artifact</h4>
+<ul>
+<li><strong>Task</strong>: 상태를 가지는(Stateful) 공식적인 업무 단위. <code class="language-text">submitted</code>, <code class="language-text">working</code>, <code class="language-text">completed</code> 등의 수명 주기를 가집니다.</li>
+<li><strong>Message</strong>: 클라이언트와 에이전트 간의 단일 대화 턴(turn).</li>
+<li><strong>Part</strong>: 메시지 내 콘텐츠의 기본 단위 (<code class="language-text">TextPart</code>, <code class="language-text">FilePart</code>, <code class="language-text">DataPart</code> 등).</li>
+<li><strong>Artifact</strong>: Task 처리 중 생성된 유형의(Tangible) 결과물 (문서, 이미지, JSON 등).</li>
+</ul>
+<h4 id="️-3가지-상호작용-메커니즘" style="position:relative;"><a href="#%EF%B8%8F-3%EA%B0%80%EC%A7%80-%EC%83%81%ED%98%B8%EC%9E%91%EC%9A%A9-%EB%A9%94%EC%BB%A4%EB%8B%88%EC%A6%98" aria-label="️ 3가지 상호작용 메커니즘 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>✔️ 3가지 상호작용 메커니즘</h4>
+<ol>
+<li><strong>Request/Response (Polling)</strong>: 클라이언트가 주기적으로 상태를 확인하는 단순한 방식.</li>
+<li><strong>Streaming (SSE)</strong>: 서버가 클라이언트에게 실시간으로 진행 상황을 계속 알려주는 스트리밍 방식.</li>
+<li><strong>Push Notifications (Webhook)</strong>: 작업이 매우 오래 걸릴 때, 서버가 작업 완료 후 클라이언트에게 비동기적으로 알려주는 방식.</li>
+</ol>
+<h3 id="2-3-a2a-프로토콜-구성요소-요약" style="position:relative;"><a href="#2-3-a2a-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C-%EA%B5%AC%EC%84%B1%EC%9A%94%EC%86%8C-%EC%9A%94%EC%95%BD" aria-label="2 3 a2a 프로토콜 구성요소 요약 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2-3. A2A 프로토콜 구성요소 요약</h3>
+<ul>
+<li><strong>Actors (행위자)</strong>: <code class="language-text">User</code>(사용자), <code class="language-text">A2A Client</code>(요청 주체), <code class="language-text">A2A Server</code>(작업 수행 주체).</li>
+<li><strong>Agent Cards (명함)</strong>: 에이전트의 능력과 접속 방법을 담은 공개 프로필.</li>
+<li><strong>Transports (통신 방식)</strong>: <code class="language-text">Request/Response</code>, <code class="language-text">Streaming (SSE)</code>, <code class="language-text">Push Notifications</code> 3가지 방식.</li>
+</ul>
+<h3 id="2-4-a2a-프로토콜-예제" style="position:relative;"><a href="#2-4-a2a-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C-%EC%98%88%EC%A0%9C" aria-label="2 4 a2a 프로토콜 예제 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2-4. A2A 프로토콜 예제</h3>
+<ul>
+<li><strong>공식 사이트</strong>: <a href="https://a2aprotocol.ai/#developers" target="_blank" rel="nofollow">a2aprotocol.ai</a></li>
+<li><strong>샘플 코드</strong>: <a href="https://github.com/a2aproject/a2a-samples/tree/main/samples/python/agents/helloworld" target="_blank" rel="nofollow">A2A Hello World 프로젝트</a></li>
+</ul>
+<h4 id="agent_executorpy-비즈니스-로직" style="position:relative;"><a href="#agent_executorpy-%EB%B9%84%EC%A6%88%EB%8B%88%EC%8A%A4-%EB%A1%9C%EC%A7%81" aria-label="agent_executorpy 비즈니스 로직 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a><code class="language-text">agent_executor.py</code> (비즈니스 로직)</h4>
+<div
+              class="gatsby-code-button-container"
+              data-toaster-id="76928840193028440000"
+              data-toaster-class="gatsby-code-button-toaster"
+              data-toaster-text-class="gatsby-code-button-toaster-text"
+              data-toaster-text="📋  코드를 복사했습니다."
+              data-toaster-duration="3000"
+              onClick="copyToClipboard(`from typing_extensions import override
+from a2a.server.agent_execution import AgentExecutor, RequestContext
+from a2a.server.events import EventQueue
+from a2a.utils import new_agent_text_message
+
+class HelloWorldAgent:
+    &quot;&quot;&quot;'Hello World' 기능을 수행하는 비즈니스 로직을 담은 클래스&quot;&quot;&quot;
+    async def invoke(self) -> str:
+        return 'Hello World'
+
+class HelloWorldAgentExecutor(AgentExecutor):
+    &quot;&quot;&quot;A2A 프로토콜 규칙에 따라 HelloWorldAgent를 실행하고 통신하는 실행기&quot;&quot;&quot;
+    def __init__(self):
+        self.agent = HelloWorldAgent()
+
+    @override
+    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
+        &quot;&quot;&quot;클라이언트로부터 작업 요청이 오면 이 메서드가 실행됨&quot;&quot;&quot;
+        result = await self.agent.invoke()
+        event_queue.enqueue_event(new_agent_text_message(result))`, `76928840193028440000`)"
+            >
+              <div
+                class="gatsby-code-button"
+                data-tooltip=""
+              >
+                copy<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              </div>
+            </div>
+<div class="gatsby-highlight" data-language="python"><pre class="language-python"><code class="language-python"><span class="token keyword">from</span> typing_extensions <span class="token keyword">import</span> override
+<span class="token keyword">from</span> a2a<span class="token punctuation">.</span>server<span class="token punctuation">.</span>agent_execution <span class="token keyword">import</span> AgentExecutor<span class="token punctuation">,</span> RequestContext
+<span class="token keyword">from</span> a2a<span class="token punctuation">.</span>server<span class="token punctuation">.</span>events <span class="token keyword">import</span> EventQueue
+<span class="token keyword">from</span> a2a<span class="token punctuation">.</span>utils <span class="token keyword">import</span> new_agent_text_message
+
+<span class="token keyword">class</span> <span class="token class-name">HelloWorldAgent</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""'Hello World' 기능을 수행하는 비즈니스 로직을 담은 클래스"""</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">invoke</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">'Hello World'</span>
+
+<span class="token keyword">class</span> <span class="token class-name">HelloWorldAgentExecutor</span><span class="token punctuation">(</span>AgentExecutor<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""A2A 프로토콜 규칙에 따라 HelloWorldAgent를 실행하고 통신하는 실행기"""</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>agent <span class="token operator">=</span> HelloWorldAgent<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token decorator annotation punctuation">@override</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">execute</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> context<span class="token punctuation">:</span> RequestContext<span class="token punctuation">,</span> event_queue<span class="token punctuation">:</span> EventQueue<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""클라이언트로부터 작업 요청이 오면 이 메서드가 실행됨"""</span>
+        result <span class="token operator">=</span> <span class="token keyword">await</span> self<span class="token punctuation">.</span>agent<span class="token punctuation">.</span>invoke<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        event_queue<span class="token punctuation">.</span>enqueue_event<span class="token punctuation">(</span>new_agent_text_message<span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre></div>
+<h4 id="serverpy-a2a-서버-설정" style="position:relative;"><a href="#serverpy-a2a-%EC%84%9C%EB%B2%84-%EC%84%A4%EC%A0%95" aria-label="serverpy a2a 서버 설정 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a><code class="language-text">server.py</code> (A2A 서버 설정)</h4>
+<div
+              class="gatsby-code-button-container"
+              data-toaster-id="80736700721289870000"
+              data-toaster-class="gatsby-code-button-toaster"
+              data-toaster-text-class="gatsby-code-button-toaster-text"
+              data-toaster-text="📋  코드를 복사했습니다."
+              data-toaster-duration="3000"
+              onClick="copyToClipboard(`from agent_executor import HelloWorldAgentExecutor
+from a2a.server.apps import A2AStarletteApplication
+from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.server.tasks import InMemoryTaskStore
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
+import uvicorn
+
+if __name__ == '__main__':
+    skill = AgentSkill(id='hello_world', name='Returns hello world', ...)
+    
+    # 다른 에이전트에게 자신을 소개하는 '명함(Agent Card)' 정보 정의
+    agent_card = AgentCard(
+        name='Hello World Agent',
+        description='Just a hello world agent',
+        url='http://localhost:9999/',
+        version='1.0.0',
+        defaultInputModes=['text'],
+        defaultOutputModes=['text'],
+        capabilities=AgentCapabilities(streaming=True), # 스트리밍 기능 지원 명시
+        skills=[skill],
+    )
+    
+    request_handler = DefaultRequestHandler(
+        agent_executor=HelloWorldAgentExecutor(),
+        task_store=InMemoryTaskStore(),
+    )
+    
+    server = A2AStarletteApplication(
+        agent_card=agent_card, http_handler=request_handler
+    )
+    
+    uvicorn.run(server.build(), host='0.0.0.0', port=9999)`, `80736700721289870000`)"
+            >
+              <div
+                class="gatsby-code-button"
+                data-tooltip=""
+              >
+                copy<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              </div>
+            </div>
+<div class="gatsby-highlight" data-language="python"><pre class="language-python"><code class="language-python"><span class="token keyword">from</span> agent_executor <span class="token keyword">import</span> HelloWorldAgentExecutor
+<span class="token keyword">from</span> a2a<span class="token punctuation">.</span>server<span class="token punctuation">.</span>apps <span class="token keyword">import</span> A2AStarletteApplication
+<span class="token keyword">from</span> a2a<span class="token punctuation">.</span>server<span class="token punctuation">.</span>request_handlers <span class="token keyword">import</span> DefaultRequestHandler
+<span class="token keyword">from</span> a2a<span class="token punctuation">.</span>server<span class="token punctuation">.</span>tasks <span class="token keyword">import</span> InMemoryTaskStore
+<span class="token keyword">from</span> a2a<span class="token punctuation">.</span>types <span class="token keyword">import</span> AgentCapabilities<span class="token punctuation">,</span> AgentCard<span class="token punctuation">,</span> AgentSkill
+<span class="token keyword">import</span> uvicorn
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    skill <span class="token operator">=</span> AgentSkill<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token string">'hello_world'</span><span class="token punctuation">,</span> name<span class="token operator">=</span><span class="token string">'Returns hello world'</span><span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span>
+    
+    <span class="token comment"># 다른 에이전트에게 자신을 소개하는 '명함(Agent Card)' 정보 정의</span>
+    agent_card <span class="token operator">=</span> AgentCard<span class="token punctuation">(</span>
+        name<span class="token operator">=</span><span class="token string">'Hello World Agent'</span><span class="token punctuation">,</span>
+        description<span class="token operator">=</span><span class="token string">'Just a hello world agent'</span><span class="token punctuation">,</span>
+        url<span class="token operator">=</span><span class="token string">'http://localhost:9999/'</span><span class="token punctuation">,</span>
+        version<span class="token operator">=</span><span class="token string">'1.0.0'</span><span class="token punctuation">,</span>
+        defaultInputModes<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'text'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        defaultOutputModes<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'text'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        capabilities<span class="token operator">=</span>AgentCapabilities<span class="token punctuation">(</span>streaming<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token comment"># 스트리밍 기능 지원 명시</span>
+        skills<span class="token operator">=</span><span class="token punctuation">[</span>skill<span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">)</span>
+    
+    request_handler <span class="token operator">=</span> DefaultRequestHandler<span class="token punctuation">(</span>
+        agent_executor<span class="token operator">=</span>HelloWorldAgentExecutor<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        task_store<span class="token operator">=</span>InMemoryTaskStore<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">)</span>
+    
+    server <span class="token operator">=</span> A2AStarletteApplication<span class="token punctuation">(</span>
+        agent_card<span class="token operator">=</span>agent_card<span class="token punctuation">,</span> http_handler<span class="token operator">=</span>request_handler
+    <span class="token punctuation">)</span>
+    
+    uvicorn<span class="token punctuation">.</span>run<span class="token punctuation">(</span>server<span class="token punctuation">.</span>build<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> host<span class="token operator">=</span><span class="token string">'0.0.0.0'</span><span class="token punctuation">,</span> port<span class="token operator">=</span><span class="token number">9999</span><span class="token punctuation">)</span></code></pre></div>
+<h4 id="clientpy-a2a-클라이언트" style="position:relative;"><a href="#clientpy-a2a-%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8" aria-label="clientpy a2a 클라이언트 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a><code class="language-text">client.py</code> (A2A 클라이언트)</h4>
+<div
+              class="gatsby-code-button-container"
+              data-toaster-id="24635424712068100000"
+              data-toaster-class="gatsby-code-button-toaster"
+              data-toaster-text-class="gatsby-code-button-toaster-text"
+              data-toaster-text="📋  코드를 복사했습니다."
+              data-toaster-duration="3000"
+              onClick="copyToClipboard(`from a2a.client import A2AClient
+import httpx
+import asyncio
+
+async def main() -> None:
+    async with httpx.AsyncClient() as httpx_client:
+        # 에이전트 카드 URL을 통해 A2A 클라이언트 객체 획득
+        client = await A2AClient.get_client_from_agent_card_url(
+            httpx_client, 'http://localhost:9999'
+        )
+        
+        # 스트리밍 방식으로 메시지 요청 및 응답 처리
+        async for chunk in client.send_message_streaming(...):
+            print(chunk.model_dump(mode='json', exclude_none=True))
+
+if __name__ == '__main__':
+    asyncio.run(main())`, `24635424712068100000`)"
+            >
+              <div
+                class="gatsby-code-button"
+                data-tooltip=""
+              >
+                copy<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              </div>
+            </div>
+<div class="gatsby-highlight" data-language="python"><pre class="language-python"><code class="language-python"><span class="token keyword">from</span> a2a<span class="token punctuation">.</span>client <span class="token keyword">import</span> A2AClient
+<span class="token keyword">import</span> httpx
+<span class="token keyword">import</span> asyncio
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    <span class="token keyword">async</span> <span class="token keyword">with</span> httpx<span class="token punctuation">.</span>AsyncClient<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">as</span> httpx_client<span class="token punctuation">:</span>
+        <span class="token comment"># 에이전트 카드 URL을 통해 A2A 클라이언트 객체 획득</span>
+        client <span class="token operator">=</span> <span class="token keyword">await</span> A2AClient<span class="token punctuation">.</span>get_client_from_agent_card_url<span class="token punctuation">(</span>
+            httpx_client<span class="token punctuation">,</span> <span class="token string">'http://localhost:9999'</span>
+        <span class="token punctuation">)</span>
+        
+        <span class="token comment"># 스트리밍 방식으로 메시지 요청 및 응답 처리</span>
+        <span class="token keyword">async</span> <span class="token keyword">for</span> chunk <span class="token keyword">in</span> client<span class="token punctuation">.</span>send_message_streaming<span class="token punctuation">(</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>chunk<span class="token punctuation">.</span>model_dump<span class="token punctuation">(</span>mode<span class="token operator">=</span><span class="token string">'json'</span><span class="token punctuation">,</span> exclude_none<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre></div>
+<hr>
+<h3 id="-a2a와-mcp-요약" style="position:relative;"><a href="#-a2a%EC%99%80-mcp-%EC%9A%94%EC%95%BD" aria-label=" a2a와 mcp 요약 permalink" class="anchor-header before"><svg aria-hidden="true" height="20" version="1.1" viewBox="0 0 16 16" width="20"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>* A2A와 MCP 요약</h3>
+<blockquote>
+<p><strong>MCP</strong>와 <strong>A2A</strong>는 모두 잠재력이 매우 높은 기술이지만, 아직 산업 표준으로 자리 잡는 초입 단계에 있다고 볼 수 있습니다. 그럼에도 불구하고 AI 에이전트 기술의 미래 방향성을 제시하는 만큼, 지속적으로 예의주시할 필요가 있습니다.</p>
+</blockquote></div><style data-emotion="css 13ttz15">.css-13ttz15{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;-webkit-box-align:flex-start;-ms-flex-align:flex-start;align-items:flex-start;-webkit-box-pack:start;-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start;width:100%;margin-top:80px;}</style><div class="css-13ttz15 e1jr4lbe4"><style data-emotion="css a0g3w0">.css-a0g3w0{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:start;-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start;gap:16px;width:100%;padding-bottom:60px;border-bottom:2px solid #EFF2F8;}</style><div class="css-a0g3w0 e1jr4lbe3"><a href="/tech-blog/?tag=markdown"><style data-emotion="css 1e6zh8g">.css-1e6zh8g{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;height:28px;border-radius:100px;padding:0px 16px;font-size:14px;font-weight:400;color:#2A2E36;background-color:#EFF2F8;}.css-1e6zh8g:hover{background-color:#DDDFEA;}</style><div class="css-1e6zh8g e1jr4lbe2">markdown</div></a><a href="/tech-blog/?tag=github"><div class="css-1e6zh8g e1jr4lbe2">github</div></a></div><style data-emotion="css zbdijn">.css-zbdijn{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;width:100%;margin-top:60px;}</style><div class="css-zbdijn e1jr4lbe1"><nav><style data-emotion="css 1vuldd6">.css-1vuldd6{display:inline-block;padding:10px 12px;border-radius:6px;font-size:14px;font-weight:500;background-color:#faf0f5;color:#e12990;-webkit-transition:all 0.3s ease-in-out;transition:all 0.3s ease-in-out;}.css-1vuldd6 span{font-weight:400;font-size:12px;color:#e12990;}.css-1vuldd6:hover{-webkit-transform:scale(1.025);-moz-transform:scale(1.025);-ms-transform:scale(1.025);transform:scale(1.025);}.css-1vuldd6:active{-webkit-transform:scale(1);-moz-transform:scale(1);-ms-transform:scale(1);transform:scale(1);}</style><a href="/tech/practical-markdown/" class="css-1vuldd6 e1jr4lbe0"><span>&lt;<!-- -->  </span>마크다운 markdown 사용법 총정리 - 응용편</a></nav><nav><a href="/tech/glassmorphism/" class="css-1vuldd6 e1jr4lbe0">CSS로 글래스모피즘, 뉴모피즘, 클레이모피즘 구현하기<span>  <!-- -->&gt;</span></a></nav></div></div><style data-emotion="css ubjqvb">.css-ubjqvb{width:100%;margin-top:128px;}.css-ubjqvb .utterances{max-width:960px;width:100%;}</style><div class="css-ubjqvb e14z35yc0"></div></div></main><style data-emotion="css rd2sj">.css-rd2sj{width:100%;padding:20px 16px;height:80px;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;background-color:#fafafa;}</style><footer class="css-rd2sj e10kflsy1"><div><style data-emotion="css 1g5fyw6">.css-1g5fyw6{font-size:12px;font-weight:400;line-height:20px;color:#505050;}@media (max-width: 768px){.css-1g5fyw6{font-size:12px;font-weight:400;line-height:17px;}}</style><p style="margin-bottom:2px" class="css-1g5fyw6 exxr09g1">Copyright ©Kiledel All rights reserved.</p><style data-emotion="css 1fi90lw">.css-1fi90lw{font-size:12px;font-weight:400;line-height:20px;color:#757575;}@media (max-width: 768px){.css-1fi90lw{font-size:12px;font-weight:400;line-height:17px;}}</style><p class="css-1fi90lw exxr09g1">2023 | built with gatsby | Developed by Kiledel</p></div><a href="https://github.com/Kiledel" target="_blank" rel="noopener norefferer"><style data-emotion="css tcsx9g">.css-tcsx9g{opacity:0.25;}.css-tcsx9g:hover{opacity:1;}</style><div class="css-tcsx9g e10kflsy0"><style data-emotion="css 13tvgi6">.css-13tvgi6{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;object-fit:contain;}.css-13tvgi6 svg>path{fill:#353535;stroke:#fff!important;stroke-width:3.5%!important;}</style><div style="width:32px;height:32px" class="css-13tvgi6 exmukbp0"><svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" class="svg-inline--fa fa-github " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" font-size="32px"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg></div></div></a></footer></div><div id="gatsby-announcer" style="position:absolute;top:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0" aria-live="assertive" aria-atomic="true"></div></div><script id="gatsby-script-loader">/*<![CDATA[*/window.pagePath="/tech/a2a-mcp/";/*]]>*/</script><!-- slice-start id="_gatsby-scripts-1" -->
+          <script
+            id="gatsby-chunk-mapping"
+          >
+            window.___chunkMapping="{\"app\":[\"/app-589c9468878d14e147e0.js\"],\"component---src-pages-404-tsx\":[\"/component---src-pages-404-tsx-0a4fae592a846b6721f6.js\"],\"component---src-pages-diary-tsx\":[\"/component---src-pages-diary-tsx-f6da9c2c96e22431b6fd.js\"],\"component---src-pages-index-tsx\":[\"/component---src-pages-index-tsx-f24d8a1a64d4d46a862f.js\"],\"component---src-pages-search-tsx\":[\"/component---src-pages-search-tsx-f4db556a9fc03637b288.js\"],\"component---src-templates-diary-template-tsx\":[\"/component---src-templates-diary-template-tsx-07681bbeae98a95c7f63.js\"],\"component---src-templates-post-template-tsx\":[\"/component---src-templates-post-template-tsx-a658e6e57c8ac8b3e545.js\"]}";
+          </script>
+        <script>window.___webpackCompilationHash="a51eb3ef276f1813de4f";</script><script src="/tech-blog/webpack-runtime-36e0aba2e3bf619d3f34.js" async></script><script src="/tech-blog/framework-d7ca43da92e58881ac9c.js" async></script><script src="/tech-blog/app-589c9468878d14e147e0.js" async></script><!-- slice-end id="_gatsby-scripts-1" --></body></html>
