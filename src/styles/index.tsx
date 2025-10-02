@@ -41,6 +41,25 @@ export const globalStyle = css`
 
   img {
     border: 0;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  /* Gatsby 이미지 처리 */
+  .gatsby-resp-image-wrapper {
+    max-width: 100% !important;
+    margin: 1.45rem 0;
+  }
+
+  .gatsby-resp-image-image {
+    object-fit: contain !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .gatsby-resp-image-background-image {
+    padding-bottom: 0 !important;
   }
 
   button {

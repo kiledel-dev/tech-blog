@@ -157,6 +157,10 @@ module.exports = {
               maxWidth: 768,
               quality: 100,
               withWebp: true,
+              backgroundColor: 'transparent',
+              linkImagesToOriginal: false,
+              showCaptions: false,
+              wrapperStyle: 'margin: 1rem 0;',
             },
           },
           {

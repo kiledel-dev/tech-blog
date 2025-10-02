@@ -1,5 +1,5 @@
 ---
-date: "2025-04-29 17:10"
+date: "2025-10-02 17:10"
 title: 'LLM 에이전트 통신 프로토콜 분석: MCP와 A2A'
 tags: ['markdown', 'github']
 summary: 'LLM 모델이 외부 도구와 상호작용하는 방식인 MCP와, Agent 간 통신 방식인 A2A 프로토콜에 대해 탐구'

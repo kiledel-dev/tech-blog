@@ -72,7 +72,7 @@ const DiaryPage = ({
           <Guidance2>Short Diary</Guidance2>
           <Margin />
           <Summary textColor={theme.colors.dark[100]}>
-            끄적끄적 내맘대로 적는 일상과 회고록
+            개발 프로젝트 회고록
           </Summary>
         </DiaryHead>
         {edges.length > 0 ? (
