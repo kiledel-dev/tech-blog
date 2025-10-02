@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Sitemap: https://kiledel-dev.github.io/tech-blog/sitemap-index.xml
+Host: https://kiledel-dev.github.io
