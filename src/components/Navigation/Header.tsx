@@ -101,12 +101,12 @@ const DesktopMenu = ({ path }: { path: string }) => {
         <Link to={PATH.diary}>
           <NavMenu title="Diary" active={path === PATH.diary} />
         </Link>
-        <Tooltip tip="준비중...">
+        {/* <Tooltip tip="준비중...">
           <NavMenu title="Project" disabled={true} active={false} />
         </Tooltip>
         <Tooltip tip="준비중...">
           <NavMenu title="About" disabled={true} active={false} />
-        </Tooltip>
+        </Tooltip> */}
       </NavMenuBox>
       <IconWrapper>
         {path !== PATH.search ? (
